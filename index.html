@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeX数式を画像に変換</title>
+    
+    <!-- スタイルシート -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- MathJax設定（MathJax読み込み前に必要） -->
+    <script src="js/config.js"></script>
+    
+    <!-- MathJax for rendering LaTeX -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+    
+    <!-- html2canvas for converting to image -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>📐 TeX数式を画像に変換</h1>
+        <p class="subtitle">LaTeX形式の数式を入力して、PNG、SVG、PDFで保存できます</p>
+        
+        <div class="input-section">
+            <label for="equation">TeX数式を入力:</label>
+            <textarea id="equation" placeholder="例: E = mc^2 または \int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}">E = mc^2</textarea>
+        </div>
+        
+        <div class="options-grid">
+            <div class="option-group">
+                <label for="fontSize">フォントサイズ (px):</label>
+                <input type="number" id="fontSize" value="48" min="12" max="200">
+            </div>
+            
+            <div class="option-group">
+                <label for="scale">スケール:</label>
+                <input type="number" id="scale" value="2" min="1" max="5" step="0.5">
+            </div>
+            
+            <div class="option-group">
+                <label for="bgColor">背景色:</label>
+                <input type="color" id="bgColor" value="#ffffff">
+            </div>
+            
+            <div class="option-group">
+                <label for="textColor">文字色:</label>
+                <input type="color" id="textColor" value="#000000">
+            </div>
+        </div>
+        
+        <div class="checkbox-group" style="margin-bottom: 20px;">
+            <input type="checkbox" id="transparent" checked>
+            <label for="transparent" style="margin: 0;">背景を透明にする</label>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn-primary" onclick="renderEquation()">プレビュー更新</button>
+            <button class="btn-secondary" onclick="clearAll()">クリア</button>
+        </div>
+        
+        <div class="preview-section">
+            <label>プレビュー:</label>
+            <div class="preview-box" id="previewBox">
+                <div id="preview">\(E = mc^2\)</div>
+            </div>
+        </div>
+        
+        <div class="format-buttons">
+            <button class="format-btn" onclick="downloadImage('png')">📥 PNG として保存</button>
+            <button class="format-btn" onclick="downloadImage('svg')">📥 SVG として保存</button>
+            <button class="format-btn" onclick="downloadPDF()">📥 PDF として保存</button>
+        </div>
+        
+        <div class="examples">
+            <h3>📚 サンプル数式 (クリックで挿入):</h3>
+            <div class="example-item" onclick="setEquation('E = mc^2')">E = mc^2 (アインシュタインの質量エネルギー等価式)</div>
+            <div class="example-item" onclick="setEquation('\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}')">∫₀^∞ e^(-x²) dx = √π/2 (ガウス積分)</div>
+            <div class="example-item" onclick="setEquation('\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}')">Σ 1/n² = π²/6 (バーゼル問題)</div>
+            <div class="example-item" onclick="setEquation('\\nabla \\times \\mathbf{E} = -\\frac{\\partial \\mathbf{B}}{\\partial t}')">∇×E = -∂B/∂t (マクスウェル方程式)</div>
+            <div class="example-item" onclick="setEquation('x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}')">二次方程式の解の公式</div>
+            <div class="example-item" onclick="setEquation('e^{i\\pi} + 1 = 0')">e^(iπ) + 1 = 0 (オイラーの等式)</div>
+            <div class="example-item" onclick="setEquation('\\lim_{n \\to \\infty} \\left(1 + \\frac{1}{n}\\right)^n = e')">lim(1+1/n)^n = e</div>
+        </div>
+    </div>
+    
+    <!-- JavaScriptファイル（config.jsは<head>内で既に読み込み済み） -->
+    <script src="js/renderer.js"></script>
+    <script src="js/exporter.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

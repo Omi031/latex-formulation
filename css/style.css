@@ -177,6 +177,12 @@ button {
     font-size: 24px;
 }
 
+/* MathJax SVG 内のテキストに Times New Roman 系フォントを適用 */
+#preview svg text,
+#preview svg [font-family] {
+    font-family: 'Times New Roman', 'STIX Two Text', 'Nimbus Roman', serif !important;
+}
+
 /* フォーマットボタン */
 .format-buttons {
     display: flex;

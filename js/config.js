@@ -8,7 +8,12 @@ window.MathJax = {
     tex: {
         inlineMath: [['\\(', '\\)']],
         displayMath: [['\\[', '\\]']],
-        packages: {'[+]': ['ams', 'color']}
+        packages: {'[+]': ['ams', 'color']},
+        // カスタムマクロ: \bm を \boldsymbol のショートカットとして追加
+        macros: {
+            // \bm{...} を \boldsymbol{...} として解釈する（引数1つ）
+            bm: ['\\boldsymbol{#1}', 1]
+        }
     },
     svg: {
         fontCache: 'global'

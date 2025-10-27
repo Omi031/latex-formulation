@@ -25,7 +25,7 @@ class LaTeXEditor:
         self.root = root
         self.root.title("LaTeX 数式エディタ - Computer Modern")
         self.root.geometry("1000x700")
-        
+
         # 設定ファイルのパス（アプリと同じフォルダ）
         app_dir = Path(__file__).parent
         self.config_file = app_dir / "latex_editor_config.json"
@@ -45,7 +45,7 @@ class LaTeXEditor:
         self.setup_shortcuts()  # ショートカットキーを設定
         self.current_equation = r"E = mc^2"
         self.render_equation()
-        
+
         # 終了時に設定を保存
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -62,7 +62,12 @@ class LaTeXEditor:
         )
 
         self.equation_text = tk.Text(
-            input_frame, height=4, width=80, font=("Courier New", 11), undo=True, maxundo=-1
+            input_frame,
+            height=4,
+            width=80,
+            font=("Courier New", 11),
+            undo=True,
+            maxundo=-1,
         )
         self.equation_text.insert("1.0", r"E = mc^2")
         self.equation_text.grid(row=0, column=0, sticky=(tk.W, tk.E))
@@ -72,11 +77,13 @@ class LaTeXEditor:
         button_frame.grid(row=1, column=0, pady=(5, 0))
 
         ttk.Button(
-            button_frame, text="プレビュー更新 (Ctrl+Enter)", command=self.render_equation
+            button_frame,
+            text="プレビュー更新 (Ctrl+Enter)",
+            command=self.render_equation,
         ).pack(side=tk.LEFT, padx=5)
-        ttk.Button(button_frame, text="クリア (Ctrl+L)", command=self.clear_equation).pack(
-            side=tk.LEFT, padx=5
-        )
+        ttk.Button(
+            button_frame, text="クリア (Ctrl+L)", command=self.clear_equation
+        ).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="📥 保存 (Ctrl+S)", command=self.save_image).pack(
             side=tk.LEFT, padx=5
         )
@@ -128,7 +135,7 @@ class LaTeXEditor:
             text="数式内容をファイル名に使用",
             variable=self.use_equation_filename_var,
         ).grid(row=1, column=0, columnspan=2, sticky=tk.W, pady=(5, 0))
-        
+
         # 保存形式選択
         ttk.Label(options_frame, text="保存形式:").grid(
             row=1, column=2, sticky=tk.W, padx=(10, 0), pady=(5, 0)
@@ -218,46 +225,61 @@ class LaTeXEditor:
             # 通常の数式はそのまま、改行がある場合は適切に処理
             equation_formatted = equation
             needs_math_mode = True  # 数式モード($...$)が必要かどうか
-            
+
             # デバッグ出力（プレビュー）
             print("PREVIEW DEBUG: Original equation:")
             print(repr(equation))
-            print("PREVIEW DEBUG: Starts with \\begin?", equation.strip().startswith(r'\begin'))
-            
+            print(
+                "PREVIEW DEBUG: Starts with \\begin?",
+                equation.strip().startswith(r"\begin"),
+            )
+
             # \begin{...} 環境がある場合はチェック
-            if equation.strip().startswith(r'\begin'):
+            if equation.strip().startswith(r"\begin"):
                 # align, align*, equation, equation*などの環境は数式モード不要
-                math_environments = ['align', 'align*', 'equation', 'equation*', 
-                                   'gather', 'gather*', 'multline', 'multline*']
+                math_environments = [
+                    "align",
+                    "align*",
+                    "equation",
+                    "equation*",
+                    "gather",
+                    "gather*",
+                    "multline",
+                    "multline*",
+                ]
                 for env in math_environments:
-                    if equation.strip().startswith(f'\\begin{{{env}}}'):
+                    if equation.strip().startswith(f"\\begin{{{env}}}"):
                         needs_math_mode = False
-                        print(f"PREVIEW DEBUG: Detected {env} environment, needs_math_mode = False")
+                        print(
+                            f"PREVIEW DEBUG: Detected {env} environment, needs_math_mode = False"
+                        )
                         break
-            elif '\n' in equation:
+            elif "\n" in equation:
                 # 改行があるが\begin環境がない場合、aligned環境を使用
-                lines = equation.strip().split('\n')
+                lines = equation.strip().split("\n")
                 lines = [line.strip() for line in lines if line.strip()]
                 if len(lines) > 1:
-                    equation_formatted = r'\begin{aligned}' + r'\\'.join(lines) + r'\end{aligned}'
+                    equation_formatted = (
+                        r"\begin{aligned}" + r"\\".join(lines) + r"\end{aligned}"
+                    )
                     print("PREVIEW DEBUG: Created aligned environment")
-            
+
             print("PREVIEW DEBUG: needs_math_mode =", needs_math_mode)
             print("PREVIEW DEBUG: equation_formatted =", repr(equation_formatted))
-            
+
             # 数式をレンダリング
             if needs_math_mode:
                 math_text = f"${equation_formatted}$"
             else:
                 math_text = equation_formatted
-            
+
             print("PREVIEW DEBUG: Final math_text =", repr(math_text))
-            
+
             # matplotlibに渡す前に、Pythonの改行(\n)を除去
             # LaTeXの\\は保持する必要があるため、\n のみを削除
-            math_text_clean = math_text.replace('\n', ' ')
+            math_text_clean = math_text.replace("\n", " ")
             print("PREVIEW DEBUG: Cleaned math_text =", repr(math_text_clean))
-            
+
             ax.text(
                 0.5,
                 0.5,
@@ -288,55 +310,56 @@ class LaTeXEditor:
         self.equation_text.delete("1.0", tk.END)
         self.equation_text.insert("1.0", equation)
         self.render_equation()
-    
+
     def undo(self):
         """元に戻す"""
         try:
             self.equation_text.edit_undo()
         except tk.TclError:
             pass  # 元に戻せない場合は何もしない
-    
+
     def redo(self):
         """やり直す"""
         try:
             self.equation_text.edit_redo()
         except tk.TclError:
             pass  # やり直せない場合は何もしない
-    
+
     def setup_shortcuts(self):
         """ショートカットキーを設定"""
+
         # Ctrl+Enter: プレビュー更新（改行を防ぐ）
         def on_ctrl_enter(e):
             self.render_equation()
             return "break"  # イベントの伝播を停止
-        
+
         # Ctrl+S: 保存（デフォルト動作を防ぐ）
         def on_ctrl_s(e):
             self.save_image()
             return "break"
-        
+
         # Ctrl+L: クリア（デフォルト動作を防ぐ）
         def on_ctrl_l(e):
             self.clear_equation()
             return "break"
-        
+
         # Ctrl+Z: 元に戻す
         def on_ctrl_z(e):
             self.undo()
             return "break"
-        
+
         # Ctrl+Y: やり直す
         def on_ctrl_y(e):
             self.redo()
             return "break"
-        
+
         # テキストウィジェットに直接バインド
         self.equation_text.bind("<Control-Return>", on_ctrl_enter)
         self.equation_text.bind("<Control-s>", on_ctrl_s)
         self.equation_text.bind("<Control-l>", on_ctrl_l)
         self.equation_text.bind("<Control-z>", on_ctrl_z)
         self.equation_text.bind("<Control-y>", on_ctrl_y)
-        
+
         # ルートウィンドウにもバインド（他の場所でも動作するように）
         self.root.bind("<Control-Return>", on_ctrl_enter)
         self.root.bind("<Control-s>", on_ctrl_s)
@@ -348,27 +371,27 @@ class LaTeXEditor:
         """画像を保存"""
         # 選択された形式を取得
         format = self.save_format_var.get()
-        
+
         # ファイル名を生成
         if self.use_equation_filename_var.get():
             import re  # reモジュールをここでインポート
-            
+
             # 数式からファイル名を生成（元の入力から生成、改行は除去）
             equation = self.equation_text.get("1.0", tk.END).strip()
             equation = equation.replace(r"\displaystyle", "").strip()
-            
+
             # 改行と複数のスペースをアンダースコアに変換
             equation = equation.replace("\n", "_").replace("\r", "")
-            equation = re.sub(r'\s+', '_', equation)
-            
+            equation = re.sub(r"\s+", "_", equation)
+
             # LaTeXコマンドを適切に変換
             safe_name = equation
             # \command{} 形式を \command_ 形式に変換（{}の内容は保持）
             # \bm{X} -> bm_X のように変換
-            safe_name = re.sub(r'\\(\w+)\{([^}]+)\}', r'\1_\2', safe_name)
+            safe_name = re.sub(r"\\(\w+)\{([^}]+)\}", r"\1_\2", safe_name)
             # 残りのバックスラッシュを削除
             safe_name = safe_name.replace("\\", "")
-            
+
             # Windowsファイル名で使えない文字のみを削除
             # 使えない文字: < > : " / \ | ? *
             safe_name = safe_name.replace("<", "")
@@ -380,7 +403,7 @@ class LaTeXEditor:
             safe_name = safe_name.replace("|", "")
             safe_name = safe_name.replace("?", "")
             safe_name = safe_name.replace("*", "")
-            
+
             # その他の特殊文字を処理
             safe_name = safe_name.replace(" ", "_")
             safe_name = safe_name.replace("{", "").replace("}", "")
@@ -389,12 +412,12 @@ class LaTeXEditor:
             safe_name = safe_name.replace("[", "").replace("]", "")
             safe_name = safe_name.replace(";", "")
             safe_name = safe_name.replace(",", "_")
-            
+
             # 複数の連続するアンダースコアを1つにまとめる
-            safe_name = re.sub(r'_+', '_', safe_name)
+            safe_name = re.sub(r"_+", "_", safe_name)
             # 先頭と末尾のアンダースコアを削除
-            safe_name = safe_name.strip('_')
-            
+            safe_name = safe_name.strip("_")
+
             # 長すぎる場合は切り詰める
             if len(safe_name) > 80:
                 safe_name = safe_name[:80]
@@ -442,47 +465,60 @@ class LaTeXEditor:
                 if self.displaystyle_var.get():
                     equation = r"\displaystyle " + equation
                 fontsize = self.fontsize_var.get()
-                
+
                 # デバッグ出力
                 print("DEBUG: Original equation:")
                 print(repr(equation))
                 print("DEBUG: First 50 chars:", equation[:50])
-                print("DEBUG: Starts with \\begin?", equation.strip().startswith(r'\begin'))
-                
+                print(
+                    "DEBUG: Starts with \\begin?",
+                    equation.strip().startswith(r"\begin"),
+                )
+
                 # 数式モードの判定（プレビューと同じロジック）
                 equation_formatted = equation
                 needs_math_mode = True
-                
-                if equation.strip().startswith(r'\begin'):
-                    math_environments = ['align', 'align*', 'equation', 'equation*', 
-                                       'gather', 'gather*', 'multline', 'multline*']
+
+                if equation.strip().startswith(r"\begin"):
+                    math_environments = [
+                        "align",
+                        "align*",
+                        "equation",
+                        "equation*",
+                        "gather",
+                        "gather*",
+                        "multline",
+                        "multline*",
+                    ]
                     for env in math_environments:
-                        if equation.strip().startswith(f'\\begin{{{env}}}'):
+                        if equation.strip().startswith(f"\\begin{{{env}}}"):
                             needs_math_mode = False
                             print(f"DEBUG: Detected {env} environment")
                             break
-                elif '\n' in equation:
-                    lines = equation.strip().split('\n')
+                elif "\n" in equation:
+                    lines = equation.strip().split("\n")
                     lines = [line.strip() for line in lines if line.strip()]
                     if len(lines) > 1:
-                        equation_formatted = r'\begin{aligned}' + r'\\'.join(lines) + r'\end{aligned}'
+                        equation_formatted = (
+                            r"\begin{aligned}" + r"\\".join(lines) + r"\end{aligned}"
+                        )
                         print("DEBUG: Created aligned environment")
-                
+
                 print("DEBUG: needs_math_mode =", needs_math_mode)
                 print("DEBUG: equation_formatted:")
                 print(repr(equation_formatted))
-                
+
                 # 数式テキストを生成
                 if needs_math_mode:
                     math_text = f"${equation_formatted}$"
                 else:
                     math_text = equation_formatted
-                
+
                 print("DEBUG: Final math_text:")
                 print(repr(math_text))
-                
+
                 # matplotlibに渡す前に、Pythonの改行(\n)を除去
-                math_text_clean = math_text.replace('\n', ' ')
+                math_text_clean = math_text.replace("\n", " ")
                 print("DEBUG: Cleaned math_text:")
                 print(repr(math_text_clean))
 
@@ -522,7 +558,7 @@ class LaTeXEditor:
 
             except Exception as e:
                 messagebox.showerror("保存エラー", f"保存に失敗しました:\n{str(e)}")
-    
+
     def save_settings(self):
         """設定をファイルに保存"""
         try:
@@ -537,7 +573,7 @@ class LaTeXEditor:
                 json.dump(settings, f, indent=2)
         except Exception as e:
             print(f"設定の保存に失敗しました: {e}")
-    
+
     def load_settings(self):
         """設定をファイルから読み込み"""
         try:
@@ -547,11 +583,13 @@ class LaTeXEditor:
                     self.fontsize_var.set(settings.get("fontsize", 24))
                     self.bgcolor_var.set(settings.get("bgcolor", "transparent"))
                     self.displaystyle_var.set(settings.get("displaystyle", False))
-                    self.use_equation_filename_var.set(settings.get("use_equation_filename", False))
+                    self.use_equation_filename_var.set(
+                        settings.get("use_equation_filename", False)
+                    )
                     self.save_format_var.set(settings.get("save_format", "svg"))
         except Exception as e:
             print(f"設定の読み込みに失敗しました: {e}")
-    
+
     def on_closing(self):
         """ウィンドウを閉じる際の処理"""
         self.save_settings()
